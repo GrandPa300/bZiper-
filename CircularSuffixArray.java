@@ -1,3 +1,5 @@
+package bwz;
+
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
@@ -5,11 +7,11 @@ import edu.princeton.cs.algs4.Stopwatch;
 /**
   * Use a combination of MSD, 3-way quicksort and insertion sort.
   * MSD sort for first 2 MSD
-  * 3-way quick sort for more than 15 items.
-  * insertion sort for less than 15 items. (not applied after testing)
+  * 3-way quick sort for more than 3 items.
+  * insertion sort for less than 4 items.
   * 
   * Since MSD is only applied twice, this version supports unicode txt file. 
-  * Run time on dickens.txt is 8.26s
+  * Run time on dickens.txt is 11.33s
   * @sean
   * @1.0
   */
@@ -36,8 +38,8 @@ public class CircularSuffixArray
     
     // sort index array using a combination of       
     //       MSD: sort all the rows 2 times based on first 2 MSD
-    // quicksort: to sort more than 15 rows
-    // insertion: to sort less than 15 rows (disabled after test)
+    // quicksort: to sort more than 3 rows
+    // insertion: to sort less than 4 rows
     private void sort(String s, int[] partialSort, int lo, int hi, int d)
     {
         // base condition
@@ -88,16 +90,13 @@ public class CircularSuffixArray
         // base condition
         if (hi <= lo) return;
         
-        /*
         // switch to insertion sort
-        if (hi - lo <= 15) 
+        if (hi - lo < 4) 
         {
             insertSort(s, lo, hi, d);
             return;
         }
-        */
         
-
         int left = lo, rght = hi;        
         // set first char as partition item
         int v = charAt(s, index[lo], d); 
@@ -107,13 +106,13 @@ public class CircularSuffixArray
         {
             int t = charAt(s, index[i], d);
             if (t < v) exchange(left++, i++);
-            if (t > v) exchange(i, rght--);
+            else if (t > v) exchange(i, rght--);
             else i++;
         }
         
         // recursion on each part
         quickSort(s, lo, left - 1, d); // sort left part
-        quickSort(s, left, rght, d+1); // sort middle for next char
+        if (v >= 0) quickSort(s, left, rght, d+1); // sort middle for next char
         quickSort(s, rght + 1, hi, d); // sort right part
     }
     
@@ -135,18 +134,22 @@ public class CircularSuffixArray
     // custom charAt to return chat in a virtual array at row r and col d
     /* a virtual unsorted circular suffix array is as below:
      * 
-     * row/col 0 1 2 3 4 5
-     *   0     b a n a n a
-     *   1     a n a n a b
-     *   2     n a n[a]b a
-     *   3     a n a b a n
-     *   4     n a b a n a
-     *   5     a b a n a n
+     * row/col 0 1 2 3 4 5 len
+     *   0     b a n a n a -1
+     *   1     a n a n a b -1
+     *   2     n a n[a]b a -1
+     *   3     a n a b a n -1
+     *   4     n a b a n a -1
+     *   5     a b a n a n -1
      *   
      * e.g. for row 2 col 3, char is 'a', charAt("banana", 2, 3) is actually 
      * start from third letter of string and go 3 to the right.
      */ 
-    private int charAt(String s, int r, int d) { return s.charAt((r + d) % len); }
+    private int charAt(String s, int r, int d) 
+    { 
+        if ( d == len) return -1;
+        return s.charAt((r + d) % len); 
+    }
     
     // check if virtual string at row v is less than the one in row w
     // both virtual strings start from d for comparison
@@ -177,7 +180,7 @@ public class CircularSuffixArray
         
         int len = s.length();
         CircularSuffixArray test = new CircularSuffixArray(s);
-        
+        /*
         for (int i = 0; i < len; i++) 
         {
             int idx = test.index(i);
@@ -185,7 +188,7 @@ public class CircularSuffixArray
                 StdOut.print(s.charAt(j));
             StdOut.println(" " + idx);
         }
-        
+        */
        StdOut.println("Run time is " + timer.elapsedTime());
     }
 }

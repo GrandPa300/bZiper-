@@ -1,3 +1,5 @@
+package bwz;
+
 /******************************************************************************
  *  Compilation:  javac Huffman.java
  *  Execution:    java Huffman - < input.txt   (compress)

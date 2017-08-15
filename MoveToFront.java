@@ -1,3 +1,5 @@
+package bwz;
+
 import java.util.LinkedList;
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
