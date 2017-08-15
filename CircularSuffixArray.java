@@ -3,18 +3,22 @@ import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.Stopwatch;
 
 /**
-  * Use MSD and switch to insertion sort when there are less then 
-  * 15 items to sort.
-  * cannot handle unicode since count[65535] use too much memory. 
-  * Run time on dickens256.txt (no unicode char version) is 15.5s
+  * Use a combination of MSD, 3-way quicksort and insertion sort.
+  * MSD sort for first 2 MSD
+  * 3-way quick sort for more than 15 items.
+  * insertion sort for less than 15 items. (not applied after testing)
+  * 
+  * Since MSD is only applied twice, this version supports unicode txt file. 
+  * Run time on dickens.txt is 8.26s
   * @sean
-  * @0.0
+  * @1.0
   */
 
 public class CircularSuffixArray 
 {
     private int len;
-    private final int R = 256;
+    // work for unicode
+    private final int R = 65535; 
     private int[] index;
     
     // circular suffix array of s
@@ -30,18 +34,19 @@ public class CircularSuffixArray
         sort(s, partialSort, 0, len - 1, 0);    
     }
     
-    // sort index array
+    // sort index array using a combination of       
+    //       MSD: sort all the rows 2 times based on first 2 MSD
+    // quicksort: to sort more than 15 rows
+    // insertion: to sort less than 15 rows (disabled after test)
     private void sort(String s, int[] partialSort, int lo, int hi, int d)
     {
         // base condition
         if (hi <= lo) return;
         
-        // insertion sort when hi - low is small
-        if (hi - lo <= 15)
+        // switch to 3-way quick sort after 1st char
+        if (d > 1) 
         {
-            for (int i = lo; i <= hi; i++)
-                for (int j = i; j > lo && isLess(s, index[j], index[j-1], d); j--)
-                     exchange(j, j - 1);
+            quickSort(s, lo, hi, d);
             return;
         }
         
@@ -77,6 +82,50 @@ public class CircularSuffixArray
         }
     }
     
+    // 3-way radix quicksort
+    private void quickSort(String s, int lo, int hi, int d)
+    {
+        // base condition
+        if (hi <= lo) return;
+        
+        /*
+        // switch to insertion sort
+        if (hi - lo <= 15) 
+        {
+            insertSort(s, lo, hi, d);
+            return;
+        }
+        */
+        
+
+        int left = lo, rght = hi;        
+        // set first char as partition item
+        int v = charAt(s, index[lo], d); 
+        
+        int i = lo + 1;
+        while (i <= rght)
+        {
+            int t = charAt(s, index[i], d);
+            if (t < v) exchange(left++, i++);
+            if (t > v) exchange(i, rght--);
+            else i++;
+        }
+        
+        // recursion on each part
+        quickSort(s, lo, left - 1, d); // sort left part
+        quickSort(s, left, rght, d+1); // sort middle for next char
+        quickSort(s, rght + 1, hi, d); // sort right part
+    }
+    
+    // insertion sort
+    private void insertSort(String s, int lo, int hi, int d)
+    {
+        for (int i = lo; i <= hi; i++)
+            for (int j = i; j > lo && isLess(s, index[j], index[j-1], d); j--)
+                 exchange(j, j - 1);
+        return;
+    }
+    
     // length of s
     public int length() {return len;}
     
@@ -97,10 +146,7 @@ public class CircularSuffixArray
      * e.g. for row 2 col 3, char is 'a', charAt("banana", 2, 3) is actually 
      * start from third letter of string and go 3 to the right.
      */ 
-    private int charAt(String s, int r, int d)
-    {
-        return s.charAt((r + d) % len); 
-    }
+    private int charAt(String s, int r, int d) { return s.charAt((r + d) % len); }
     
     // check if virtual string at row v is less than the one in row w
     // both virtual strings start from d for comparison
@@ -114,7 +160,7 @@ public class CircularSuffixArray
         return false;
     }
     
-    // exchange
+    // exchange element in index array
     private void exchange(int i, int j)
     {
         int temp = index[i];
@@ -132,7 +178,6 @@ public class CircularSuffixArray
         int len = s.length();
         CircularSuffixArray test = new CircularSuffixArray(s);
         
-        /*
         for (int i = 0; i < len; i++) 
         {
             int idx = test.index(i);
@@ -140,7 +185,7 @@ public class CircularSuffixArray
                 StdOut.print(s.charAt(j));
             StdOut.println(" " + idx);
         }
-        */
+        
        StdOut.println("Run time is " + timer.elapsedTime());
     }
 }
